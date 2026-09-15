@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Strand Street, Cape Town — Forgotten Lineages</title>
+
+<style>
+:root{
+  --bg:#111;
+  --panel:#181818;
+  --text:#f4efe7;
+  --muted:#b8b0a6;
+  --accent:#9b5f45;
+  --accent2:#c27a5b;
+  --line:rgba(255,255,255,.15);
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+body{min-height:100vh}
+
+header{
+  padding:32px clamp(20px,5vw,64px) 24px;
+  border-bottom:1px solid var(--line);
+}
+.eyebrow{
+  margin:0 0 8px;
+  text-transform:uppercase;
+  letter-spacing:.15em;
+  font-size:12px;
+  color:var(--muted);
+}
+h1{
+  margin:0 0 8px;
+  font-size:clamp(38px,6vw,70px);
+  line-height:1;
+  font-weight:500;
+}
+.subtitle{
+  margin:0;
+  color:var(--muted);
+  font-size:17px;
+}
+.intro{
+  max-width:850px;
+  margin:20px 0 0;
+  color:#ddd6cd;
+  line-height:1.65;
+  font-size:15px;
+}
+
+.viewer-wrap{
+  position:relative;
+  width:100%;
+  background:#080808;
+}
+#viewer{
+  width:100%;
+  height:850px;
+  background:#080808;
+}
+
+.hint{
+  position:absolute;
+  left:16px;
+  bottom:16px;
+  z-index:30;
+  padding:9px 12px;
+  border-radius:999px;
+  background:rgba(17,17,17,.86);
+  color:#f5f0e8;
+  border:1px solid rgba(255,255,255,.16);
+  font-size:12px;
+  pointer-events:none;
+}
+
+.marker{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  border:2px solid #fff;
+  background:var(--accent);
+  color:#fff;
+  font-weight:700;
+  font-size:14px;
+  cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.45);
+  transition:transform .18s ease,background .18s ease;
+}
+.marker:hover,
+.marker:focus-visible,
+.marker.active{
+  transform:scale(1.14);
+  background:var(--accent2);
+  outline:none;
+}
+
+.story{
+  display:none;
+  position:absolute;
+  right:22px;
+  top:22px;
+  z-index:40;
+  width:min(340px,calc(100% - 44px));
+  padding:18px 18px 16px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:10px;
+  background:rgba(17,17,17,.96);
+  color:var(--text);
+  box-shadow:0 14px 38px rgba(0,0,0,.42);
+  backdrop-filter:blur(6px);
+}
+.story.open{display:block}
+.story-kicker{
+  margin:0 0 5px;
+  color:var(--accent2);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+}
+.story h2{
+  margin:0 28px 7px 0;
+  font-size:23px;
+  line-height:1.15;
+}
+.story p{
+  margin:0;
+  color:#ded7ce;
+  font-size:14px;
+  line-height:1.58;
+}
+.story-close{
+  position:absolute;
+  top:8px;
+  right:8px;
+  width:32px;
+  height:32px;
+  border:0;
+  background:transparent;
+  color:#fff;
+  font-size:22px;
+  cursor:pointer;
+}
+
+.controls{
+  padding:16px clamp(20px,5vw,64px) 20px;
+  background:var(--panel);
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+}
+.controls-title{
+  margin:0 0 12px;
+  font-size:13px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.12em;
+}
+.control-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.control-buttons button{
+  border:1px solid rgba(255,255,255,.17);
+  border-radius:999px;
+  background:#111;
+  color:var(--text);
+  padding:9px 13px;
+  font-size:13px;
+  cursor:pointer;
+}
+.control-buttons button:hover,
+.control-buttons button:focus-visible{
+  border-color:var(--accent2);
+  outline:none;
+}
+.credit{
+  padding:14px clamp(20px,5vw,64px) 28px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+
+@media(max-width:720px){
+  #viewer{height:650px}
+  .story{
+    top:auto;
+    left:12px;
+    right:12px;
+    bottom:60px;
+    width:auto;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <p class="eyebrow">Forgotten Lineages · Exhibition</p>
+  <h1>Arrival in Cape Town</h1>
+  <p class="subtitle">Jan Brandes, <em>Strand Street in Cape Town</em>, 1786</p>
+  <p class="intro">
+    Brandes’ drawing offers a glimpse of the urban landscape encountered by people
+    arriving in Cape Town from across the Indian Ocean world. Click the numbered
+    markers to explore details in the scene and see how individual stories can later
+    be connected to specific places and figures.
+  </p>
+</header>
+
+<main>
+  <section class="viewer-wrap">
+    <div id="viewer" aria-label="Interactive view of Strand Street in Cape Town"></div>
+
+    <div class="hint">Scroll to zoom · drag to move · click a marker</div>
+
+    <aside class="story" id="story" aria-live="polite">
+      <button class="story-close" id="story-close" type="button" aria-label="Close story">×</button>
+      <div class="story-kicker" id="story-kicker"></div>
+      <h2 id="story-title"></h2>
+      <p id="story-text"></p>
+    </aside>
+  </section>
+
+  <section class="controls">
+    <p class="controls-title">Look closer</p>
+    <div class="control-buttons">
+      <button type="button" data-open="0">1 · Castle</button>
+      <button type="button" data-open="1">2 · Shoreline / landing</button>
+      <button type="button" data-open="2">3 · Swiss soldier</button>
+      <button type="button" data-open="3">4 · Servants</button>
+      <button type="button" data-open="4">5 · Coachmen</button>
+      <button type="button" id="reset">Return to full image</button>
+    </div>
+  </section>
+
+  <div class="credit">
+    Jan Brandes, <em>De Strandstraat in Kaapstad</em>, 1786. Rijksmuseum.
+    This prototype uses placeholder stories to demonstrate how details in the image
+    can later be linked to archival narratives.
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
+<script>
+const viewer = OpenSeadragon({
+  id: "viewer",
+  prefixUrl: "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/",
+  tileSources: "https://iiif.micr.io/yoeoF/info.json",
+  showNavigator: true,
+  showZoomControl: true,
+  showHomeControl: true,
+  showFullPageControl: true,
+  animationTime: 1.5,
+  blendTime: 0.2,
+  springStiffness: 5,
+  visibilityRatio: 0.8,
+  constrainDuringPan: true
+});
+
+/*
+  Adjusted hotspot positions:
+  the previous y-values placed some markers below the panoramic image.
+  These coordinates keep the markers inside the drawing area.
+*/
+const hotspots = [
+  {
+    number:"01",
+    x:0.76,
+    y:0.18,
+    zoom:3.3,
+    title:"The Castle",
+    text:"Story #1 — placeholder. This hotspot can later explain the Castle in the distance and its place within the colonial city."
+  },
+  {
+    number:"02",
+    x:0.87,
+    y:0.24,
+    zoom:3.5,
+    title:"Shoreline and landing place",
+    text:"Story #2 — placeholder. A future story can connect this part of the scene to the shoreline and the arrival of people brought to the Cape through Indian Ocean networks."
+  },
+  {
+    number:"03",
+    x:0.16,
+    y:0.31,
+    zoom:4.1,
+    title:"The Swiss soldier",
+    text:"Story #3 — placeholder. This detail can later introduce military mobility and the mix of people visible in eighteenth-century Cape Town."
+  },
+  {
+    number:"04",
+    x:0.54,
+    y:0.30,
+    zoom:4.9,
+    title:"Servants in the street",
+    text:"Story #4 — placeholder. This hotspot can later discuss the two servants, likely enslaved, visible behind the oxen and what their presence reveals about urban labour."
+  },
+  {
+    number:"05",
+    x:0.84,
+    y:0.33,
+    zoom:4.6,
+    title:"Coachmen",
+    text:"Story #5 — placeholder. This location can later be connected to transport, labour and everyday movement through the colonial city."
+  }
+];
+
+const story = document.getElementById("story");
+const storyKicker = document.getElementById("story-kicker");
+const storyTitle = document.getElementById("story-title");
+const storyText = document.getElementById("story-text");
+let markerEls = [];
+
+function openStory(index){
+  const h = hotspots[index];
+
+  viewer.viewport.panTo(
+    new OpenSeadragon.Point(h.x,h.y),
+    false
+  );
+
+  viewer.viewport.zoomTo(
+    h.zoom,
+    new OpenSeadragon.Point(h.x,h.y),
+    false
+  );
+
+  markerEls.forEach(m=>m.classList.remove("active"));
+  if(markerEls[index]) markerEls[index].classList.add("active");
+
+  storyKicker.textContent = h.number + " / 05";
+  storyTitle.textContent = h.title;
+  storyText.textContent = h.text;
+  story.classList.add("open");
+}
+
+function closeStory(){
+  story.classList.remove("open");
+  markerEls.forEach(m=>m.classList.remove("active"));
+}
+
+viewer.addHandler("open", function(){
+  hotspots.forEach(function(h,index){
+    const marker = document.createElement("button");
+    marker.className = "marker";
+    marker.type = "button";
+    marker.textContent = index + 1;
+    marker.setAttribute("aria-label",h.title);
+
+    marker.addEventListener("click",function(event){
+      event.stopPropagation();
+      openStory(index);
+    });
+
+    markerEls.push(marker);
+
+    viewer.addOverlay({
+      element:marker,
+      location:new OpenSeadragon.Point(h.x,h.y),
+      placement:OpenSeadragon.Placement.CENTER
+    });
+  });
+});
+
+document.querySelectorAll("[data-open]").forEach(function(button){
+  button.addEventListener("click",function(){
+    openStory(Number(button.dataset.open));
+  });
+});
+
+document.getElementById("story-close").addEventListener("click",closeStory);
+
+document.getElementById("reset").addEventListener("click",function(){
+  closeStory();
+  viewer.viewport.goHome(false);
+});
+
+document.addEventListener("keydown",function(event){
+  if(event.key==="Escape") closeStory();
+});
+</script>
+
+</body>
+</html>
