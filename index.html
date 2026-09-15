@@ -30,57 +30,87 @@
 
   <div class="footer-note">Interactive map for the Forgotten Lineages research project.</div>
 
-  <script src="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.js"></script>
-  <script>
-    const map = new maplibregl.Map({
-      container: "map",
-      style: "https://tiles.openfreemap.org/styles/liberty",
-      center: [49, -10],
-      zoom: 2.2,
-      attributionControl: true
-    });
+ <script src="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.js"></script>
 
-    map.addControl(new maplibregl.NavigationControl(), "top-left");
+<script>
+const map = new maplibregl.Map({
+  container: "map",
+  style: "https://tiles.openfreemap.org/styles/liberty",
+  center: [49, -10],
+  zoom: 2.2,
+  attributionControl: true
+});
 
-    const locations = [
-      {
-        name: "Cape Town",
-        country: "South Africa",
-        coordinates: [18.4241, -33.9249],
-        text: "A major destination within Dutch and later British networks of forced displacement."
-      },
-      {
-        name: "Colombo",
-        country: "Sri Lanka",
-        coordinates: [79.8612, 6.9271],
-        text: "A crucial hub in Dutch networks of slavery and mobility across the Indian Ocean."
-      }
-    ];
+map.addControl(
+  new maplibregl.NavigationControl(),
+  "top-left"
+);
 
-    locations.forEach((place) => {
-      const el = document.createElement("button");
-      el.className = "marker";
-      el.type = "button";
-      el.setAttribute("aria-label", place.name);
+const locations = [
+  {
+    name: "Cape Town",
+    country: "South Africa",
+    coordinates: [18.4241, -33.9249],
+    text: "A major destination within Dutch and later British networks of forced displacement."
+  },
+  {
+    name: "Colombo",
+    country: "Sri Lanka",
+    coordinates: [79.8612, 6.9271],
+    text: "A crucial hub in Dutch networks of slavery and mobility across the Indian Ocean."
+  }
+];
 
-      const popup = new maplibregl.Popup({ offset: 16 }).setHTML(
-        '<div class="popup-country">' + place.country + '</div>' +
-        '<div class="popup-title">' + place.name + '</div>' +
-        '<div>' + place.text + '</div>'
-      );
 
-      new maplibregl.Marker({ element: el })
-        .setLngLat(place.coordinates)
-        .setPopup(popup)
-        .addTo(map);
-    });
+/* -------------------------
+   MARKERS
+------------------------- */
 
-   map.on("load", () => {
+locations.forEach(function(place) {
+
+  const el = document.createElement("button");
+
+  el.className = "marker";
+  el.type = "button";
+  el.setAttribute("aria-label", place.name);
+
+  const popup = new maplibregl.Popup({
+    offset: 16
+  }).setHTML(
+    '<div class="popup-country">' +
+      place.country +
+    '</div>' +
+
+    '<div class="popup-title">' +
+      place.name +
+    '</div>' +
+
+    '<div>' +
+      place.text +
+    '</div>'
+  );
+
+  new maplibregl.Marker({
+    element: el
+  })
+    .setLngLat(place.coordinates)
+    .setPopup(popup)
+    .addTo(map);
+
+});
+
+
+/* -------------------------
+   ROUTE
+------------------------- */
+
+map.on("load", function() {
 
   map.addSource("connection", {
     type: "geojson",
     data: {
       type: "Feature",
+      properties: {},
       geometry: {
         type: "LineString",
         coordinates: [
@@ -100,10 +130,12 @@
     id: "connection-line",
     type: "line",
     source: "connection",
+
     layout: {
       "line-cap": "round",
       "line-join": "round"
     },
+
     paint: {
       "line-color": "#9b5f45",
       "line-width": 3,
@@ -112,9 +144,14 @@
     }
   });
 
+
+  /* -------------------------
+     MAP VIEW
+  ------------------------- */
+
   const bounds = new maplibregl.LngLatBounds();
 
-  locations.forEach((place) => {
+  locations.forEach(function(place) {
     bounds.extend(place.coordinates);
   });
 
@@ -124,24 +161,4 @@
   });
 
 });
-
-      map.addLayer({
-        id: "connection-line",
-        type: "line",
-        source: "connection",
-        layout: { "line-cap": "round", "line-join": "round" },
-        paint: {
-          "line-color": "#9b5f45",
-          "line-width": 2,
-          "line-opacity": 0.85,
-          "line-dasharray": [2, 2]
-        }
-      });
-
-      const bounds = new maplibregl.LngLatBounds();
-      locations.forEach((place) => bounds.extend(place.coordinates));
-      map.fitBounds(bounds, { padding: 90, duration: 0 });
-    });
-  </script>
-</body>
-</html>
+</script>
