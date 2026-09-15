@@ -75,25 +75,55 @@
         .addTo(map);
     });
 
-    map.on("load", () => {
-      map.addSource("connection", {
-        type: "geojson",
-        data: {
-          type: "Feature",
-          geometry: {
-            type: "LineString",
-            coordinates: [
-              [18.4241, -33.9249],
-              [29, -27],
-              [40, -19],
-              [51, -10],
-              [63, -2],
-              [72, 3],
-              [79.8612, 6.9271]
-            ]
-          }
-        }
-      });
+   map.on("load", () => {
+
+  map.addSource("connection", {
+    type: "geojson",
+    data: {
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [18.4241, -33.9249],
+          [29, -27],
+          [40, -19],
+          [51, -10],
+          [63, -2],
+          [72, 3],
+          [79.8612, 6.9271]
+        ]
+      }
+    }
+  });
+
+  map.addLayer({
+    id: "connection-line",
+    type: "line",
+    source: "connection",
+    layout: {
+      "line-cap": "round",
+      "line-join": "round"
+    },
+    paint: {
+      "line-color": "#9b5f45",
+      "line-width": 3,
+      "line-opacity": 0.95,
+      "line-dasharray": [2, 2]
+    }
+  });
+
+  const bounds = new maplibregl.LngLatBounds();
+
+  locations.forEach((place) => {
+    bounds.extend(place.coordinates);
+  });
+
+  map.fitBounds(bounds, {
+    padding: 90,
+    duration: 0
+  });
+
+});
 
       map.addLayer({
         id: "connection-line",
