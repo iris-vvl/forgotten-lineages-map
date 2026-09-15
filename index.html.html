@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Forgotten Lineages — Across the Indian Ocean</title>
+  <link href="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    html, body { margin:0; padding:0; background:#111; color:#fff; font-family:Arial,Helvetica,sans-serif; }
+    .intro { padding:28px 34px 22px; background:#111; }
+    .eyebrow { margin:0 0 8px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.75; }
+    h1 { margin:0 0 10px; font-size:clamp(34px,6vw,64px); line-height:1.05; font-weight:500; }
+    .intro p { margin:0; max-width:760px; font-size:18px; line-height:1.55; color:rgba(255,255,255,.82); }
+    #map { width:100%; height:720px; }
+    .maplibregl-popup-content { color:#111; border-radius:8px; padding:14px 16px; max-width:280px; line-height:1.45; }
+    .popup-country { font-size:11px; text-transform:uppercase; letter-spacing:.08em; opacity:.55; margin-bottom:4px; }
+    .popup-title { font-size:20px; font-weight:700; margin-bottom:6px; }
+    .marker { width:20px; height:20px; border-radius:50%; background:#9b5f45; border:2px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.35); cursor:pointer; }
+    .footer-note { padding:12px 18px 18px; background:#111; color:rgba(255,255,255,.6); font-size:12px; }
+  </style>
+</head>
+<body>
+  <section class="intro">
+    <p class="eyebrow">Explore the project</p>
+    <h1>Across the Indian Ocean</h1>
+    <p>Tracing connections between Sri Lanka, South Africa and the wider Indian Ocean world.</p>
+  </section>
+
+  <div id="map" aria-label="Map showing Cape Town and Colombo"></div>
+
+  <div class="footer-note">Interactive map for the Forgotten Lineages research project.</div>
+
+  <script src="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.js"></script>
+  <script>
+    const map = new maplibregl.Map({
+      container: "map",
+      style: "https://tiles.openfreemap.org/styles/positron",
+      center: [49, -10],
+      zoom: 2.2,
+      attributionControl: true
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), "top-left");
+
+    const locations = [
+      {
+        name: "Cape Town",
+        country: "South Africa",
+        coordinates: [18.4241, -33.9249],
+        text: "A major destination within Dutch and later British networks of forced displacement."
+      },
+      {
+        name: "Colombo",
+        country: "Sri Lanka",
+        coordinates: [79.8612, 6.9271],
+        text: "A crucial hub in Dutch networks of slavery and mobility across the Indian Ocean."
+      }
+    ];
+
+    locations.forEach((place) => {
+      const el = document.createElement("button");
+      el.className = "marker";
+      el.type = "button";
+      el.setAttribute("aria-label", place.name);
+
+      const popup = new maplibregl.Popup({ offset: 16 }).setHTML(
+        '<div class="popup-country">' + place.country + '</div>' +
+        '<div class="popup-title">' + place.name + '</div>' +
+        '<div>' + place.text + '</div>'
+      );
+
+      new maplibregl.Marker({ element: el })
+        .setLngLat(place.coordinates)
+        .setPopup(popup)
+        .addTo(map);
+    });
+
+    map.on("load", () => {
+      map.addSource("connection", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [18.4241, -33.9249],
+              [29, -27],
+              [40, -19],
+              [51, -10],
+              [63, -2],
+              [72, 3],
+              [79.8612, 6.9271]
+            ]
+          }
+        }
+      });
+
+      map.addLayer({
+        id: "connection-line",
+        type: "line",
+        source: "connection",
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: {
+          "line-color": "#9b5f45",
+          "line-width": 2,
+          "line-opacity": 0.85,
+          "line-dasharray": [2, 2]
+        }
+      });
+
+      const bounds = new maplibregl.LngLatBounds();
+      locations.forEach((place) => bounds.extend(place.coordinates));
+      map.fitBounds(bounds, { padding: 90, duration: 0 });
+    });
+  </script>
+</body>
+</html>
