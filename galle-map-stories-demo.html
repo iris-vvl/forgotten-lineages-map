@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mapping Lives in Galle — Forgotten Lineages</title>
+
+<style>
+:root{
+  --bg:#111;
+  --panel:#181818;
+  --text:#f4efe7;
+  --muted:#b8b0a6;
+  --accent:#9b5f45;
+  --accent2:#c27a5b;
+  --line:rgba(255,255,255,.15);
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+body{min-height:100vh}
+
+header{
+  padding:32px clamp(20px,5vw,64px) 24px;
+  border-bottom:1px solid var(--line);
+}
+.eyebrow{
+  margin:0 0 8px;
+  text-transform:uppercase;
+  letter-spacing:.15em;
+  font-size:12px;
+  color:var(--muted);
+}
+h1{
+  margin:0 0 8px;
+  font-size:clamp(38px,6vw,70px);
+  line-height:1;
+  font-weight:500;
+}
+.subtitle{
+  margin:0;
+  color:var(--muted);
+  font-size:17px;
+}
+.intro{
+  max-width:850px;
+  margin:20px 0 0;
+  color:#ddd6cd;
+  line-height:1.65;
+  font-size:15px;
+}
+
+.map-wrap{
+  position:relative;
+  width:100%;
+  overflow:hidden;
+  background:#e8e0d3;
+  min-height:500px;
+}
+.map-inner{
+  position:relative;
+  width:100%;
+}
+#map-image{
+  width:100%;
+  height:auto;
+  display:block;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+
+.loading,
+.error{
+  min-height:650px;
+  padding:70px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:#3a342f;
+  background:#e8e0d3;
+}
+.error{display:none}
+.error-box{
+  max-width:700px;
+  padding:28px;
+  border:1px solid rgba(0,0,0,.18);
+  background:rgba(255,255,255,.45);
+}
+.error code{
+  display:block;
+  margin-top:12px;
+  font-size:13px;
+  word-break:break-all;
+}
+
+.marker{
+  position:absolute;
+  width:42px;
+  height:42px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  border:2px solid #fff;
+  background:var(--accent);
+  color:#fff;
+  font-weight:700;
+  font-size:15px;
+  cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.45);
+  z-index:5;
+  transition:transform .18s ease,background .18s ease;
+}
+.marker:hover,
+.marker:focus-visible,
+.marker.active{
+  transform:translate(-50%,-50%) scale(1.16);
+  background:var(--accent2);
+  outline:none;
+}
+
+.story{
+  position:absolute;
+  z-index:10;
+  width:min(300px,78vw);
+  padding:14px 15px 15px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:9px;
+  background:rgba(17,17,17,.96);
+  color:var(--text);
+  box-shadow:0 14px 36px rgba(0,0,0,.42);
+  display:none;
+  pointer-events:auto;
+}
+.story.open{display:block}
+.story-kicker{
+  margin:0 0 4px;
+  color:var(--accent2);
+  font-size:11px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+.story h2{
+  margin:0 24px 6px 0;
+  font-size:20px;
+  line-height:1.15;
+}
+.story p{
+  margin:0;
+  font-size:13px;
+  line-height:1.55;
+  color:#ded7ce;
+}
+.story-close{
+  position:absolute;
+  right:7px;
+  top:7px;
+  width:28px;
+  height:28px;
+  border:0;
+  background:transparent;
+  color:#fff;
+  font-size:20px;
+  cursor:pointer;
+}
+
+.hint{
+  position:absolute;
+  left:16px;
+  bottom:16px;
+  z-index:12;
+  padding:9px 12px;
+  border-radius:999px;
+  background:rgba(17,17,17,.85);
+  color:#f5f0e8;
+  border:1px solid rgba(255,255,255,.16);
+  font-size:12px;
+  pointer-events:none;
+}
+
+.legend{
+  padding:16px clamp(20px,5vw,64px) 20px;
+  background:var(--panel);
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+}
+.legend-title{
+  margin:0 0 12px;
+  font-size:13px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.12em;
+}
+.legend-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.legend button{
+  border:1px solid rgba(255,255,255,.17);
+  border-radius:999px;
+  background:#111;
+  color:var(--text);
+  padding:9px 13px;
+  font-size:13px;
+  cursor:pointer;
+}
+.legend button:hover,
+.legend button:focus-visible{
+  border-color:var(--accent2);
+  outline:none;
+}
+.credit{
+  padding:14px clamp(20px,5vw,64px) 28px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+
+@media(max-width:720px){
+  .marker{width:36px;height:36px;font-size:13px}
+  .story{
+    position:fixed !important;
+    left:12px !important;
+    right:12px !important;
+    bottom:12px !important;
+    top:auto !important;
+    width:auto;
+    z-index:100;
+  }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <p class="eyebrow">Forgotten Lineages · Exhibition</p>
+  <h1>Mapping Lives</h1>
+  <p class="subtitle">Galle Fort and its surroundings, c. 1790</p>
+  <p class="intro">
+    The map records fortifications, streets and buildings, but also the spaces in which
+    enslaved and manumitted people lived and moved. Click the markers to see how future
+    stories can connect individual places on the map to lives recovered from the archives.
+  </p>
+</header>
+
+<main>
+  <section class="map-wrap" id="map-wrap">
+    <div class="loading" id="loading">
+      Loading the map…
+    </div>
+
+    <div class="error" id="error">
+      <div class="error-box">
+        <strong>The map image could not be found.</strong><br>
+        Upload the image to this GitHub Pages folder using one of these filenames:
+        <code>plan-galle-1790.jpg</code>
+        <code>galle-plan-1790.jpg</code>
+        <code>plattegrond-galle.jpg</code>
+        <p style="margin-bottom:0">
+          The interactive demonstration is ready; only the map image is missing.
+        </p>
+      </div>
+    </div>
+
+    <div class="map-inner" id="map-inner" hidden>
+      <img id="map-image" alt="Plan of Galle Fort and its surroundings, 1790">
+
+      <!-- MARKERS -->
+      <button class="marker" style="left:18%;top:61%" data-story="0" aria-label="Open Story 1">1</button>
+      <button class="marker" style="left:46%;top:44%" data-story="1" aria-label="Open Story 2">2</button>
+      <button class="marker" style="left:55%;top:55%" data-story="2" aria-label="Open Story 3">3</button>
+      <button class="marker" style="left:82%;top:34%" data-story="3" aria-label="Open Story 4">4</button>
+      <button class="marker" style="left:31%;top:49%" data-story="4" aria-label="Open Story 5">5</button>
+      <button class="marker" style="left:67%;top:69%" data-story="5" aria-label="Open Story 6">6</button>
+
+      <!-- ONE REUSABLE STORY POPUP -->
+      <div class="story" id="story">
+        <button class="story-close" id="story-close" aria-label="Close story">×</button>
+        <div class="story-kicker" id="story-kicker"></div>
+        <h2 id="story-title"></h2>
+        <p id="story-text"></p>
+      </div>
+
+      <div class="hint">Click a numbered marker to reveal a story</div>
+    </div>
+  </section>
+
+  <section class="legend">
+    <p class="legend-title">Explore the map</p>
+    <div class="legend-buttons">
+      <button data-open="0">1 · Company slave hamlet</button>
+      <button data-open="1">2 · Reformed Church</button>
+      <button data-open="2">3 · Inside the fort</button>
+      <button data-open="3">4 · Farm on the hill</button>
+      <button data-open="4">5 · Marketplace</button>
+      <button data-open="5">6 · Graveyard / surroundings</button>
+    </div>
+  </section>
+
+  <div class="credit">
+    Carl Friedrich Reimer and G.E. Schenk, <em>Plan van de Vesting Gale</em>, 1790.
+    Nationaal Archief, VEL1071. This prototype uses placeholder stories to demonstrate
+    how archival narratives can later be attached to individual locations.
+  </div>
+</main>
+
+<script>
+const candidateImages = [
+  "plan-galle-1790.jpg",
+  "galle-plan-1790.jpg",
+  "plattegrond-galle.jpg",
+  "kaart-galle.jpg",
+  "https://iris-vvl.github.io/forgotten-lineages-map/plan-galle-1790.jpg",
+  "https://iris-vvl.github.io/forgotten-lineages-map/galle-plan-1790.jpg",
+  "https://iris-vvl.github.io/forgotten-lineages-map/plattegrond-galle.jpg"
+];
+
+const stories = [
+  {
+    kicker:"Story 01",
+    title:"Beyond the walls",
+    text:"Story #1 — placeholder. This location can later tell the story of the hamlet just beyond the fort walls where people enslaved by the Company lived."
+  },
+  {
+    kicker:"Story 02",
+    title:"The Reformed Church",
+    text:"Story #2 — placeholder. A future story can connect this place to the minister, his household, and tensions surrounding his treatment of enslaved members of that household."
+  },
+  {
+    kicker:"Story 03",
+    title:"Lives inside the fort",
+    text:"Story #3 — placeholder. This point can later introduce an individual, household, workplace or legal encounter located within the fortified town."
+  },
+  {
+    kicker:"Story 04",
+    title:"A farm on the hill",
+    text:"Story #4 — placeholder. A future story can explore the farm once owned by a group of manumitted individuals and the possibilities of life after slavery."
+  },
+  {
+    kicker:"Story 05",
+    title:"The marketplace",
+    text:"Story #5 — placeholder. This location can later reveal how enslaved, free and manumitted inhabitants encountered one another through work and exchange."
+  },
+  {
+    kicker:"Story 06",
+    title:"Beyond the colonial centre",
+    text:"Story #6 — placeholder. Small inns, farms, burial grounds and religious sites show that the world of Galle extended far beyond the fort itself."
+  }
+];
+
+const img = document.getElementById("map-image");
+const mapInner = document.getElementById("map-inner");
+const loading = document.getElementById("loading");
+const error = document.getElementById("error");
+const story = document.getElementById("story");
+const storyKicker = document.getElementById("story-kicker");
+const storyTitle = document.getElementById("story-title");
+const storyText = document.getElementById("story-text");
+const markers = Array.from(document.querySelectorAll(".marker"));
+
+let candidateIndex = 0;
+
+function tryNextImage(){
+  if(candidateIndex >= candidateImages.length){
+    loading.style.display = "none";
+    error.style.display = "flex";
+    return;
+  }
+  img.src = candidateImages[candidateIndex++];
+}
+
+img.addEventListener("load",()=>{
+  loading.style.display = "none";
+  error.style.display = "none";
+  mapInner.hidden = false;
+});
+
+img.addEventListener("error",tryNextImage);
+
+function closeStory(){
+  story.classList.remove("open");
+  markers.forEach(m=>m.classList.remove("active"));
+}
+
+function openStory(index){
+  const data = stories[index];
+  const marker = markers[index];
+
+  markers.forEach(m=>m.classList.remove("active"));
+  marker.classList.add("active");
+
+  storyKicker.textContent = data.kicker;
+  storyTitle.textContent = data.title;
+  storyText.textContent = data.text;
+
+  const mapRect = mapInner.getBoundingClientRect();
+  const markerRect = marker.getBoundingClientRect();
+
+  let left = markerRect.left - mapRect.left + 28;
+  let top = markerRect.top - mapRect.top - 20;
+
+  const popupWidth = 300;
+  if(left + popupWidth > mapInner.clientWidth - 12){
+    left = markerRect.left - mapRect.left - popupWidth - 22;
+  }
+  if(left < 12) left = 12;
+  if(top < 12) top = 12;
+
+  story.style.left = left + "px";
+  story.style.top = top + "px";
+  story.classList.add("open");
+}
+
+markers.forEach((marker,index)=>{
+  marker.addEventListener("click",()=>{
+    if(marker.classList.contains("active") && story.classList.contains("open")){
+      closeStory();
+    }else{
+      openStory(index);
+    }
+  });
+});
+
+document.querySelectorAll("[data-open]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const index = Number(btn.dataset.open);
+    openStory(index);
+    markers[index].scrollIntoView({behavior:"smooth",block:"center"});
+  });
+});
+
+document.getElementById("story-close").addEventListener("click",closeStory);
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape") closeStory();
+});
+
+tryNextImage();
+</script>
+
+</body>
+</html>
